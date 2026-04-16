@@ -1,6 +1,6 @@
 # ambrogio-skill
 
-Ambrogio skill for coding agents. Teaches your agent how to run AI-powered reliability scenarios against your app.
+Ambrogio skill for coding agents. Teaches your agent how to verify what they build.
 
 ## Install
 

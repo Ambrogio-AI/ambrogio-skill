@@ -1,12 +1,12 @@
 ---
 name: ambrogio
-description: Run AI-powered reliability scenarios from your terminal or coding agent. Use when building, testing, or verifying features against a live app with Ambrogio.
+description: Run AI-powered scenarios from your terminal or coding agent. Use when building, testing, or verifying features against a live app with Ambrogio.
 allowed-tools: Bash(ambrogio:*)
 ---
 
 # Ambrogio
 
-Run AI-powered reliability scenarios from your terminal or coding agent.
+Run AI-powered scenarios from your terminal or coding agent.
 
 [Ambrogio](https://ambrogio.tech) is the product reliability layer: define scenarios in natural language, and Ambrogio runs them against your app using real browsers in the cloud. This skill lets you trigger and verify scenarios directly from your coding agent.
 
@@ -22,7 +22,7 @@ Or run directly with `npx ambrogio`.
 
 ```bash
 ambrogio set-api-key <your-api-key>    # get from app.ambrogio.tech > CI/CD
-ambrogio set-product <product-id>       # your product ID from the dashboard
+ambrogio select-product                 # picks your product (auto-selects if only one)
 ```
 
 Both values can also be set via environment variables:
@@ -42,7 +42,7 @@ Priority: flags > env vars > config file (`~/.ambrogio/config.json`).
 # Against a deployed URL
 ambrogio run --url https://staging.example.com
 
-# Against localhost (auto-creates a Cloudflare tunnel)
+# Against localhost
 ambrogio run --local 3000
 ```
 
