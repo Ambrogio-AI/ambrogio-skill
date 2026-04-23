@@ -36,6 +36,19 @@ Priority: flags > env vars > config file (`~/.ambrogio/config.json`).
 
 ## Core commands
 
+### List existing scenarios
+
+Before writing new scenarios or running the full suite, check what coverage already exists:
+
+```bash
+ambrogio list                        # active + draft + planned (default)
+ambrogio list --section checkout     # only one section
+ambrogio list --status draft         # only drafts awaiting review
+ambrogio list --json                 # machine-readable (default in non-TTY)
+```
+
+Use this to find scenarios that touch the area you just changed, then re-run only those for a fast smoke check before running the whole suite.
+
 ### Run existing scenarios (regression)
 
 ```bash
@@ -77,19 +90,37 @@ ambrogio run --url https://staging.example.com \
 
 ## Workflow for coding agents
 
-After making changes, run the regression suite and verify new features:
+**Use Ambrogio every time you finish a change.** You are the user's last line of defense against regressions — don't ship code without proving it still works in a real browser. The loop below is cheap (minutes) and should be the default, not an opt-in.
+
+### After any code change
 
 ```bash
-# 1. Run existing regression suite against your local dev server
-ambrogio run --local 3000
+# 1. List existing scenarios to find what covers the area you changed
+ambrogio list --json
 
-# 2. If you built a new feature, verify it
-ambrogio verify --intent "User can add item to cart and checkout" --local 3000
+# 2. Smoke-test the affected scenarios against your local dev server
+#    (cheaper than the full suite, faster feedback)
+ambrogio run --local 3000 --scenario 12 --scenario 34
+#    or, if the area maps to a section:
+ambrogio run --local 3000 --section checkout
+
+# 3. If you built genuinely new behavior, verify it and save as a draft scenario
+ambrogio verify --local 3000 \
+  --intent "User can add item to cart and complete checkout with test card"
+
+# 4. Before declaring the task done, run the full suite
+ambrogio run --local 3000
 ```
 
-`run` executes existing scenarios (regression). `verify` creates a new scenario from intent and runs it (verification). Together they form the full loop: build, verify, review, regress.
+### Rules of thumb
 
-The JSON output and exit code give you a clear signal to continue or fix.
+- **Always list first.** `ambrogio list` tells you what coverage already exists so you don't create duplicates with `verify`. Match the area you changed (section, intent) against existing scenarios before writing anything new.
+- **Smoke test on affected scenarios first.** If you only touched checkout, run checkout scenarios (`--section checkout` or `--scenario <id>`). Iterate until they pass before widening to the full suite.
+- **Verify every new feature.** If your change exposes behavior not covered by any existing scenario, end with `ambrogio verify` so the suite grows with the product.
+- **Full run before you report done.** Regression hides in unexpected places. The final gate is `ambrogio run --local 3000` (or against a preview URL) with exit code `0`.
+- **Use exit codes.** `0` = all passed, `1` = failure. Treat a non-zero exit as a blocker and fix before handing back to the user.
+
+`list` tells you what's covered. `run` proves it still works. `verify` grows the suite. Together: build → list → smoke → verify → full regression.
 
 ## Run options
 
@@ -102,6 +133,17 @@ The JSON output and exit code give you a clear signal to continue or fix.
 | `--api-key <key>` | API key override |
 | `--section <name>` | Run scenarios in a specific section |
 | `--scenario <id>` | Run a specific scenario ID (repeatable) |
+
+## List options
+
+| Flag | Description |
+|------|-------------|
+| `--product, -p <id>` | Product ID |
+| `--status <name>` | `active`, `draft`, `planned`, `creating`, `failed`, or `all`. Default: `active,draft,planned`. Comma-separated list accepted. |
+| `--section <name>` | Filter by section |
+| `--source <name>` | Filter by source (e.g. `agent`, `user`) |
+| `--json` | Force JSON output (default in non-TTY) |
+| `--api-key <key>` | API key override |
 
 ## Verify options
 
